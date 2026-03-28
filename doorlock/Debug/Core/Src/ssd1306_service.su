@@ -1,0 +1,6 @@
+../Core/Src/ssd1306_service.c:15:6:ssd1306_RectangleFill	16	static
+../Core/Src/ssd1306_service.c:20:6:ssd1306_Circle	16	static
+../Core/Src/ssd1306_service.c:29:6:displayTemperatureAtInit	24	static
+../Core/Src/ssd1306_service.c:45:6:displayTemperature	24	static
+../Core/Src/ssd1306_service.c:65:6:pinResetFeedbacks	56	static
+../Core/Src/ssd1306_service.c:105:6:pinResetFeedbacksNoHeading	48	static
