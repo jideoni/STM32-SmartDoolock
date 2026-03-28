@@ -26,6 +26,7 @@
 #include "ble.h"
 #include "eeprom.h"
 #include "RC522_RFID.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
