@@ -17,6 +17,10 @@ extern SPI_HandleTypeDef hspi1;
 //Maximum length of the array
 #define MAX_LEN 16
 
+extern uint8_t status;
+extern uint8_t str[MAX_LEN]; // Max_LEN = 16
+extern uint8_t sNum[5];
+
 #define HSPI_INSTANCE				&hspi1
 #define MFRC522_CS_PORT				GPIOB		//SDA
 #define MFRC522_CS_PIN				GPIO_PIN_10

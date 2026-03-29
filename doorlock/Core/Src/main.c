@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ssd1306.h"
@@ -26,7 +27,6 @@
 #include "ble.h"
 #include "eeprom.h"
 #include "RC522_RFID.h"
-//Branch testtttttt
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,14 +54,19 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+SPI_HandleTypeDef hspi1;
+
 TIM_HandleTypeDef htim16;
+
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 /* Definitions for BLE_Task */
 osThreadId_t BLE_TaskHandle;
 const osThreadAttr_t BLE_Task_attributes = { .name = "BLE_Task", .stack_size =
-		128 * 8, .priority = (osPriority_t) osPriorityNormal, };
+		128 * 4, .priority = (osPriority_t) osPriorityNormal, };
 /* Definitions for Display_Task */
 osThreadId_t Display_TaskHandle;
 const osThreadAttr_t Display_Task_attributes =
@@ -76,6 +81,11 @@ const osThreadAttr_t TempSensor_Task_attributes =
 osThreadId_t Main_TaskHandleHandle;
 const osThreadAttr_t Main_TaskHandle_attributes = { .name = "Main_TaskHandle",
 		.stack_size = 128 * 4, .priority = (osPriority_t) osPriorityLow, };
+/* Definitions for RFID_TaskHandle */
+osThreadId_t RFID_TaskHandleHandle;
+const osThreadAttr_t RFID_TaskHandle_attributes =
+		{ .name = "RFID_TaskHandle", .stack_size = 128 * 4, .priority =
+				(osPriority_t) osPriorityAboveNormal1, };
 /* Definitions for I2C1_Mutex */
 osMutexId_t I2C1_MutexHandle;
 const osMutexAttr_t I2C1_Mutex_attributes = { .name = "I2C1_Mutex" };
@@ -98,10 +108,12 @@ static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM16_Init(void);
-void StartBLE_TaskTask(void *argument);
-void StartDisplay_TaskTask(void *argument);
-void StartTempSensor_TaskTask(void *argument);
-void StartMain_TaskTask(void *argument);
+static void MX_SPI1_Init(void);
+void StartBLE_Task(void *argument);
+void StartDisplay_Task(void *argument);
+void StartTempSensor_Task(void *argument);
+void StartMain_Task(void *argument);
+void StartRFID_Task(void *argument);
 
 /* USER CODE BEGIN PFP */
 void lock_door(void);
@@ -145,7 +157,9 @@ int main(void) {
 	MX_I2C1_Init();
 	MX_USART1_UART_Init();
 	MX_TIM16_Init();
+	MX_SPI1_Init();
 	/* USER CODE BEGIN 2 */
+	MFRC522_Init();
 	ssd1306_Init();
 	receive_BLE_command();
 	displayTemperatureAtInit("Temperature");
@@ -172,21 +186,49 @@ int main(void) {
 	/* creation of I2C1_Mutex */
 	I2C1_MutexHandle = osMutexNew(&I2C1_Mutex_attributes);
 
+	/* USER CODE BEGIN RTOS_MUTEX */
+	/* add mutexes, ... */
+	/* USER CODE END RTOS_MUTEX */
+
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* add semaphores, ... */
+	/* USER CODE END RTOS_SEMAPHORES */
+
+	/* USER CODE BEGIN RTOS_TIMERS */
+	/* start timers, add new ones, ... */
+	/* USER CODE END RTOS_TIMERS */
+
+	/* USER CODE BEGIN RTOS_QUEUES */
+	/* add queues, ... */
+	/* USER CODE END RTOS_QUEUES */
+
 	/* Create the thread(s) */
 	/* creation of BLE_Task */
-	BLE_TaskHandle = osThreadNew(StartBLE_TaskTask, NULL, &BLE_Task_attributes);
+	BLE_TaskHandle = osThreadNew(StartBLE_Task, NULL, &BLE_Task_attributes);
 
 	/* creation of Display_Task */
-	Display_TaskHandle = osThreadNew(StartDisplay_TaskTask, NULL,
+	Display_TaskHandle = osThreadNew(StartDisplay_Task, NULL,
 			&Display_Task_attributes);
 
 	/* creation of TempSensor_Task */
-	TempSensor_TaskHandle = osThreadNew(StartTempSensor_TaskTask, NULL,
+	TempSensor_TaskHandle = osThreadNew(StartTempSensor_Task, NULL,
 			&TempSensor_Task_attributes);
 
 	/* creation of Main_TaskHandle */
-	Main_TaskHandleHandle = osThreadNew(StartMain_TaskTask, NULL,
+	Main_TaskHandleHandle = osThreadNew(StartMain_Task, NULL,
 			&Main_TaskHandle_attributes);
+
+	/* creation of RFID_TaskHandle */
+	RFID_TaskHandleHandle = osThreadNew(StartRFID_Task, NULL,
+			&RFID_TaskHandle_attributes);
+
+	/* USER CODE BEGIN RTOS_THREADS */
+	/* add threads, ... */
+	/* USER CODE END RTOS_THREADS */
+
+	/* USER CODE BEGIN RTOS_EVENTS */
+	/* add events, ... */
+	/* USER CODE END RTOS_EVENTS */
 
 	/* Start scheduler */
 	osKernelStart();
@@ -286,6 +328,44 @@ static void MX_I2C1_Init(void) {
 	/* USER CODE BEGIN I2C1_Init 2 */
 
 	/* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_SPI1_Init(void) {
+
+	/* USER CODE BEGIN SPI1_Init 0 */
+
+	/* USER CODE END SPI1_Init 0 */
+
+	/* USER CODE BEGIN SPI1_Init 1 */
+
+	/* USER CODE END SPI1_Init 1 */
+	/* SPI1 parameter configuration*/
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1.Init.CRCPolynomial = 7;
+	hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+	hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+	if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SPI1_Init 2 */
+
+	/* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -419,6 +499,12 @@ static void MX_GPIO_Init(void) {
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(SDA_GPIO_Port, SDA_Pin, GPIO_PIN_RESET);
+
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(SPI_RESET_GPIO_Port, SPI_RESET_Pin, GPIO_PIN_RESET);
+
 	/*Configure GPIO pin : B1_Pin */
 	GPIO_InitStruct.Pin = B1_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
@@ -431,6 +517,20 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : SDA_Pin */
+	GPIO_InitStruct.Pin = SDA_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SDA_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : SPI_RESET_Pin */
+	GPIO_InitStruct.Pin = SPI_RESET_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(SPI_RESET_GPIO_Port, &GPIO_InitStruct);
 
 	/* USER CODE BEGIN MX_GPIO_Init_2 */
 	/* USER CODE END MX_GPIO_Init_2 */
@@ -460,13 +560,21 @@ void pin_reset_timeout() {
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
-		osThreadFlagsSet(BLE_TaskHandle, BLE_TASK_THREAD_FLAG);
+		if (BLE_TaskHandle != NULL) {
+			osThreadFlagsSet(BLE_TaskHandle, BLE_TASK_THREAD_FLAG);
+		}
 	}
 }
 /* USER CODE END 4 */
 
-/* USER CODE END Header_StartBLE_TaskTask */
-void StartBLE_TaskTask(void *argument) {
+/* USER CODE BEGIN Header_StartBLE_Task */
+/**
+ * @brief  Function implementing the BLE_Task thread.
+ * @param  argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartBLE_Task */
+void StartBLE_Task(void *argument) {
 	/* USER CODE BEGIN 5 */
 	/* Infinite loop */
 	for (;;) {
@@ -474,22 +582,24 @@ void StartBLE_TaskTask(void *argument) {
 		receive_BLE_command();
 		osMutexAcquire(I2C1_MutexHandle, osWaitForever);
 		process_BLE_command();
-		osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
+		if (Display_TaskHandle != NULL) {
+			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
+		}
 		osMutexRelease(I2C1_MutexHandle);
 		osDelay(1);
 	}
 	/* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_StartDisplay_TaskTask */
+/* USER CODE BEGIN Header_StartDisplay_Task */
 /**
  * @brief Function implementing the Display_Task thread.
  * @param argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartDisplay_TaskTask */
-void StartDisplay_TaskTask(void *argument) {
-	/* USER CODE BEGIN StartDisplay_TaskTask */
+/* USER CODE END Header_StartDisplay_Task */
+void StartDisplay_Task(void *argument) {
+	/* USER CODE BEGIN StartDisplay_Task */
 	/* Infinite loop */
 	for (;;) {
 		osThreadFlagsWait(DISPLAY_TASK_THREAD_FLAG, osFlagsWaitAny,
@@ -499,38 +609,40 @@ void StartDisplay_TaskTask(void *argument) {
 		osMutexRelease(I2C1_MutexHandle);
 		osDelay(1);
 	}
-	/* USER CODE END StartDisplay_TaskTask */
+	/* USER CODE END StartDisplay_Task */
 }
 
-/* USER CODE BEGIN Header_StartTempSensor_TaskTask */
+/* USER CODE BEGIN Header_StartTempSensor_Task */
 /**
  * @brief Function implementing the TempSensor_Task thread.
  * @param argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartTempSensor_TaskTask */
-void StartTempSensor_TaskTask(void *argument) {
-	/* USER CODE BEGIN StartTempSensor_TaskTask */
+/* USER CODE END Header_StartTempSensor_Task */
+void StartTempSensor_Task(void *argument) {
+	/* USER CODE BEGIN StartTempSensor_Task */
 	/* Infinite loop */
 	for (;;) {
 		osMutexAcquire(I2C1_MutexHandle, osWaitForever);
 		temp_Sensor_service();
 		osMutexRelease(I2C1_MutexHandle);
-		osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
+		if (Display_TaskHandle != NULL) {
+			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
+		}
 		osDelay(3000);
 	}
-	/* USER CODE END StartTempSensor_TaskTask */
+	/* USER CODE END StartTempSensor_Task */
 }
 
-/* USER CODE BEGIN Header_StartMain_TaskTask */
+/* USER CODE BEGIN Header_StartMain_Task */
 /**
  * @brief Function implementing the Main_TaskHandle thread.
  * @param argument: Not used
  * @retval None
  */
-/* USER CODE END Header_StartMain_TaskTask */
-void StartMain_TaskTask(void *argument) {
-	/* USER CODE BEGIN StartMain_TaskTask */
+/* USER CODE END Header_StartMain_Task */
+void StartMain_Task(void *argument) {
+	/* USER CODE BEGIN StartMain_Task */
 	/* Infinite loop */
 	for (;;) {
 		if (access_request_too_many_attempts
@@ -551,7 +663,36 @@ void StartMain_TaskTask(void *argument) {
 		pin_reset_timeout();
 		osDelay(1);
 	}
-	/* USER CODE END StartMain_TaskTask */
+	/* USER CODE END StartMain_Task */
+}
+
+/* USER CODE BEGIN Header_StartRFID_Task */
+/**
+ * @brief Function implementing the RFID_TaskHandle thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartRFID_Task */
+void StartRFID_Task(void *argument) {
+	/* USER CODE BEGIN StartRFID_Task */
+	/* Infinite loop */
+	for (;;) {
+		status = MFRC522_Request(PICC_REQIDL, str);
+		status = MFRC522_Anticoll(str);
+		memcpy(sNum, str, 5);
+		HAL_Delay(100);
+		if ((str[0] == 213) && (str[1] == 230) && (str[2] == 43)
+				&& (str[3] == 7) && (str[4] == 31)) {
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
+			HAL_Delay(100);
+		} else if ((str[0] == 155) && (str[1] == 153) && (str[2] == 15)
+				&& (str[3] == 7) && (str[4] == 10)) {
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+			HAL_Delay(100);
+		}
+		osDelay(1);
+	}
+	/* USER CODE END StartRFID_Task */
 }
 
 /**

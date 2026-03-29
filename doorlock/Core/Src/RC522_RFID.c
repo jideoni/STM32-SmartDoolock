@@ -7,6 +7,10 @@
 
 #include "RC522_RFID.h"
 
+uint8_t status = 0;
+uint8_t str[MAX_LEN]; // Max_LEN = 16
+uint8_t sNum[5];
+
 /*
  * Function Name: RC522_SPI_Transfer
  * Description: A common function used by Write_MFRC522 and Read_MFRC522

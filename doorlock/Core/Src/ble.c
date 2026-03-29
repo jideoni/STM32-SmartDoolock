@@ -9,8 +9,8 @@
 #include <string.h>
 #include "ble.h"
 
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 
 bool new_pin_signal = 0;
 bool pin_reset_too_many_attempts = 0;
@@ -42,7 +42,6 @@ void process_BLE_command(void) {
 		if (access_request_too_many_attempts == NO) {
 			retrieve_ble_command();
 			retrieve_current_pin();
-
 			// set new pin
 			if ((new_pin_signal == 1) && (set_pin_mode == ACTIVE)) {
 				update_pin();
@@ -180,7 +179,7 @@ void update_pin(void) {
 		serial_print("Try a different PIN");
 		pinResetFeedbacks(1, "Pin Change Menu", "Try Again", "");
 	} else {
-		Update_PIN(new_pin_buf);
+		write_PIN_to_eeprom(new_pin_buf);
 		pinResetFeedbacks(2, "Pin Change Menu", "Pin Change", "Successful");
 		sprintf(print_buffer, "New pin is %d\r\n", ble_command);
 		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,

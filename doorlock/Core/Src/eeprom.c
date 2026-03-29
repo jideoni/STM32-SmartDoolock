@@ -18,7 +18,7 @@ HAL_StatusTypeDef Read_Current_PIN(uint8_t *pin) {
 	EEPROM_RW_TIMEOUT);
 }
 
-void Update_PIN(uint8_t ble_rx[]) {
+void write_PIN_to_eeprom(uint8_t ble_rx[]) {
 	HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDR, EEPROM_PAGE,
 	EEPROM_ADDR_MEM_SIZE, ble_rx, EEPROM_RW_DATA_SIZE,
 	EEPROM_RW_TIMEOUT);

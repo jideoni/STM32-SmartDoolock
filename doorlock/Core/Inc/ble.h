@@ -20,9 +20,6 @@
 #define PIN_CHANGE_COMMAND 10794	//0x2A2A
 #define SIZE_IN_BYTES 4
 
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
-
 extern bool new_pin_signal;
 extern bool pin_reset_too_many_attempts;
 
