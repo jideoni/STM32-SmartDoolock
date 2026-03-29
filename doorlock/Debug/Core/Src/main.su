@@ -15,4 +15,4 @@
 ../Core/Src/main.c:622:6:StartTempSensor_Task	16	static
 ../Core/Src/main.c:644:6:StartMain_Task	16	static
 ../Core/Src/main.c:676:6:StartRFID_Task	16	static
-../Core/Src/main.c:702:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:693:6:Error_Handler	8	static,ignoring_inline_asm

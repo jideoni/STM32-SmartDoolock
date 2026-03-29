@@ -26,7 +26,7 @@
 #include "temp_sensor.h"
 #include "ble.h"
 #include "eeprom.h"
-#include "RC522_RFID.h"
+#include "RC522_RFID_Service.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -159,7 +159,7 @@ int main(void) {
 	MX_TIM16_Init();
 	MX_SPI1_Init();
 	/* USER CODE BEGIN 2 */
-	MFRC522_Init();
+	RFID_Init();
 	ssd1306_Init();
 	receive_BLE_command();
 	displayTemperatureAtInit("Temperature");
@@ -540,8 +540,8 @@ static void MX_GPIO_Init(void) {
 void lock_door() {
 	timeCheck = time_now();
 	if (timeCheck - timeOpen >= LOCK_DOOR_TIMEOUT) {
-		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-		door_status = 0;	//door locked
+	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+	door_status = LOCKED;	//door locked
 	}
 }
 
@@ -677,20 +677,11 @@ void StartRFID_Task(void *argument) {
 	/* USER CODE BEGIN StartRFID_Task */
 	/* Infinite loop */
 	for (;;) {
-		status = MFRC522_Request(PICC_REQIDL, str);
-		status = MFRC522_Anticoll(str);
-		memcpy(sNum, str, 5);
-		HAL_Delay(100);
-		if ((str[0] == 213) && (str[1] == 230) && (str[2] == 43)
-				&& (str[3] == 7) && (str[4] == 31)) {
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
-			HAL_Delay(100);
-		} else if ((str[0] == 155) && (str[1] == 153) && (str[2] == 15)
-				&& (str[3] == 7) && (str[4] == 10)) {
-			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-			HAL_Delay(100);
+		process_RFID_command();
+		if (Display_TaskHandle != NULL) {
+			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
 		}
-		osDelay(1);
+		osDelay(100);
 	}
 	/* USER CODE END StartRFID_Task */
 }

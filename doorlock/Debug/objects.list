@@ -1,3 +1,4 @@
+"./Core/Src/RC522_RFID-Service.o"
 "./Core/Src/RC522_RFID.o"
 "./Core/Src/ble.o"
 "./Core/Src/eeprom.o"

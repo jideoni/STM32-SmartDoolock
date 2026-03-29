@@ -14,5 +14,5 @@ main.c:577:6:StartBLE_Task	2
 main.c:601:6:StartDisplay_Task	1
 main.c:622:6:StartTempSensor_Task	2
 main.c:644:6:StartMain_Task	5
-main.c:676:6:StartRFID_Task	11
-main.c:702:6:Error_Handler	1
+main.c:676:6:StartRFID_Task	2
+main.c:693:6:Error_Handler	1

@@ -37,7 +37,6 @@ ACC_REQ_t access_request_too_many_attempts = NO;
 
 void process_BLE_command(void) {
 	uint16_t header = (rx_buf[0] << 8) | rx_buf[1];
-
 	if (header == BLE_COMMAND_HEADER) {	//confirm if ble command header is valid
 		if (access_request_too_many_attempts == NO) {
 			retrieve_ble_command();
@@ -157,7 +156,7 @@ void unlock_door() {
 	access_request_counter = 0;		//reset counter
 	pin_change_counter = 0;
 	display_temp = DISPLAY_TEMP;
-	door_status = UNLOCKED;	//door unlocked
+	door_status = OPEN;	//door unlocked
 }
 
 void clear_rx_buf(void) {

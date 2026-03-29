@@ -1,0 +1,2 @@
+../Core/Src/RC522_RFID-Service.c:14:6:RFID_Init	8	static
+../Core/Src/RC522_RFID-Service.c:18:6:process_RFID_command	8	static

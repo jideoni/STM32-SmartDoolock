@@ -51,7 +51,7 @@ typedef enum {
 extern ACC_REQ_t access_request_too_many_attempts;
 
 typedef enum {
-	LOCKED, UNLOCKED
+	LOCKED, OPEN
 } DOOR_STATUS_t;
 extern DOOR_STATUS_t door_status;
 
