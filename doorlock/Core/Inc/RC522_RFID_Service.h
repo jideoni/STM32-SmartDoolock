@@ -13,9 +13,6 @@
 #include "RC522_RFID.h"
 
 #define ID_SIZE 5
-//extern uint8_t status;
-//extern uint8_t str[MAX_LEN]; // Max_LEN = 16
-//extern uint8_t sNum[5];
 
 void RFID_Init(void);
 void process_RFID_command(void);

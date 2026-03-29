@@ -27,6 +27,7 @@ TimeStamp set_pin_timeflag = 0;
 TimeStamp set_pin_timeout = 0;
 TimeStamp attempt_again_timer = 0;
 TimeStamp timeOpen = 0;
+TimeStamp timeCheck = 0;
 
 char print_buffer[50];
 uint8_t rx_buf[RX_SIZE];	//holds 1 byte of data
@@ -52,8 +53,7 @@ void process_BLE_command(void) {
 				unlock_door();
 			}
 			//enter pin change mode
-			else if ((ble_command == PIN_CHANGE_COMMAND)
-					&& (door_status == LOCKED)) {
+			else if ((ble_command == PIN_CHANGE_COMMAND) && (door_status == LOCKED)) {
 				enter_pin_change_mode();
 			}
 			//confirm if entered PIN is correct, deny access
@@ -145,6 +145,15 @@ void pin_change_attempts_check(void) {
 
 void receive_BLE_command(void) {
 	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_buf, RX_SIZE);
+}
+
+void lock_door(void) {
+	timeCheck = time_now();
+	if (timeCheck - timeOpen >= LOCK_DOOR_TIMEOUT) {
+		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+		door_status = LOCKED;	//door locked
+		pinResetFeedbacks(2, "Goodbye", "Door", "Locked");
+	}
 }
 
 void unlock_door() {

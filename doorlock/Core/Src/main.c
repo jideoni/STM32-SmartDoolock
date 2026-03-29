@@ -37,7 +37,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define SHARED_I2C &hi2c1
-#define LOCK_DOOR_TIMEOUT 5000
 #define SET_PIN_TIMEOUT 10000
 
 //thread flags
@@ -96,8 +95,6 @@ float temp_func;
 typedef uint32_t TimeStamp;
 
 extern uint8_t eeprom_data[EEPROM_RW_DATA_SIZE];
-
-TimeStamp timeCheck = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,7 +113,6 @@ void StartMain_Task(void *argument);
 void StartRFID_Task(void *argument);
 
 /* USER CODE BEGIN PFP */
-void lock_door(void);
 void pin_reset_timeout(void);
 /* USER CODE END PFP */
 
@@ -537,14 +533,6 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
-void lock_door() {
-	timeCheck = time_now();
-	if (timeCheck - timeOpen >= LOCK_DOOR_TIMEOUT) {
-	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-	door_status = LOCKED;	//door locked
-	}
-}
-
 void pin_reset_timeout() {
 	set_pin_timeout = time_now();
 	if ((set_pin_timeout - set_pin_timeflag >= SET_PIN_TIMEOUT)
@@ -659,7 +647,7 @@ void StartMain_Task(void *argument) {
 			pin_reset_too_many_attempts = 0;
 			pin_reset_attempt_again_timer = 0;
 		}
-		lock_door();
+		//lock_door();
 		pin_reset_timeout();
 		osDelay(1);
 	}
@@ -681,7 +669,7 @@ void StartRFID_Task(void *argument) {
 		if (Display_TaskHandle != NULL) {
 			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
 		}
-		osDelay(100);
+		osDelay(1000);
 	}
 	/* USER CODE END StartRFID_Task */
 }
