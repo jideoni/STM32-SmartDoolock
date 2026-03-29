@@ -9,8 +9,8 @@
 #include <string.h>
 #include "ble.h"
 
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 
 bool new_pin_signal = 0;
 bool pin_reset_too_many_attempts = 0;
@@ -27,6 +27,7 @@ TimeStamp set_pin_timeflag = 0;
 TimeStamp set_pin_timeout = 0;
 TimeStamp attempt_again_timer = 0;
 TimeStamp timeOpen = 0;
+TimeStamp timeCheck = 0;
 
 char print_buffer[50];
 uint8_t rx_buf[RX_SIZE];	//holds 1 byte of data
@@ -37,12 +38,10 @@ ACC_REQ_t access_request_too_many_attempts = NO;
 
 void process_BLE_command(void) {
 	uint16_t header = (rx_buf[0] << 8) | rx_buf[1];
-
 	if (header == BLE_COMMAND_HEADER) {	//confirm if ble command header is valid
 		if (access_request_too_many_attempts == NO) {
 			retrieve_ble_command();
 			retrieve_current_pin();
-
 			// set new pin
 			if ((new_pin_signal == 1) && (set_pin_mode == ACTIVE)) {
 				update_pin();
@@ -54,8 +53,7 @@ void process_BLE_command(void) {
 				unlock_door();
 			}
 			//enter pin change mode
-			else if ((ble_command == PIN_CHANGE_COMMAND)
-					&& (door_status == LOCKED)) {
+			else if ((ble_command == PIN_CHANGE_COMMAND) && (door_status == LOCKED)) {
 				enter_pin_change_mode();
 			}
 			//confirm if entered PIN is correct, deny access
@@ -149,6 +147,15 @@ void receive_BLE_command(void) {
 	HAL_UART_Receive_IT(&huart1, (uint8_t*) rx_buf, RX_SIZE);
 }
 
+void lock_door(void) {
+	timeCheck = time_now();
+	if (timeCheck - timeOpen >= LOCK_DOOR_TIMEOUT) {
+		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+		door_status = LOCKED;	//door locked
+		pinResetFeedbacks(2, "Goodbye", "Door", "Locked");
+	}
+}
+
 void unlock_door() {
 	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 1);
 	timeOpen = time_now();
@@ -158,7 +165,7 @@ void unlock_door() {
 	access_request_counter = 0;		//reset counter
 	pin_change_counter = 0;
 	display_temp = DISPLAY_TEMP;
-	door_status = UNLOCKED;	//door unlocked
+	door_status = OPEN;	//door unlocked
 }
 
 void clear_rx_buf(void) {
@@ -180,7 +187,7 @@ void update_pin(void) {
 		serial_print("Try a different PIN");
 		pinResetFeedbacks(1, "Pin Change Menu", "Try Again", "");
 	} else {
-		Update_PIN(new_pin_buf);
+		write_PIN_to_eeprom(new_pin_buf);
 		pinResetFeedbacks(2, "Pin Change Menu", "Pin Change", "Successful");
 		sprintf(print_buffer, "New pin is %d\r\n", ble_command);
 		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,

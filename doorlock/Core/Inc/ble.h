@@ -19,9 +19,7 @@
 #define PIN_CHANGE_RETRY_WAIT_TIME 30000
 #define PIN_CHANGE_COMMAND 10794	//0x2A2A
 #define SIZE_IN_BYTES 4
-
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
+#define LOCK_DOOR_TIMEOUT 5000
 
 extern bool new_pin_signal;
 extern bool pin_reset_too_many_attempts;
@@ -54,7 +52,7 @@ typedef enum {
 extern ACC_REQ_t access_request_too_many_attempts;
 
 typedef enum {
-	LOCKED, UNLOCKED
+	LOCKED, OPEN
 } DOOR_STATUS_t;
 extern DOOR_STATUS_t door_status;
 
@@ -72,5 +70,6 @@ void process_pin_change(void);
 void enter_pin_change_mode(void);
 void access_denied(void);
 void access_request_wait_notif(void);
+void lock_door(void);
 
 #endif /* INC_BLE_H_ */

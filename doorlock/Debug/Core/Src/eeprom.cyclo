@@ -1,2 +1,2 @@
 eeprom.c:12:19:Read_Current_PIN	1
-eeprom.c:21:6:Update_PIN	1
+eeprom.c:21:6:write_PIN_to_eeprom	1
