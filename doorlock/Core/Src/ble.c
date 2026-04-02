@@ -28,6 +28,7 @@ TimeStamp set_pin_timeout = 0;
 TimeStamp attempt_again_timer = 0;
 TimeStamp timeOpen = 0;
 TimeStamp timeCheck = 0;
+TimeStamp save_new_card_time_flag = 0;
 
 char print_buffer[50];
 uint8_t rx_buf[RX_SIZE];	//holds 1 byte of data
@@ -35,6 +36,8 @@ uint8_t rx_buf[RX_SIZE];	//holds 1 byte of data
 SET_PIN_MODE_t set_pin_mode = INACTIVE;
 DOOR_STATUS_t door_status = LOCKED;
 ACC_REQ_t access_request_too_many_attempts = NO;
+SAVE_NEW_CARD1_MODE_t save_new_card1_mode = IDLE1;
+SAVE_NEW_CARD2_MODE_t save_new_card2_mode = IDLE2;
 
 void process_BLE_command(void) {
 	uint16_t header = (rx_buf[0] << 8) | rx_buf[1];
@@ -42,19 +45,41 @@ void process_BLE_command(void) {
 		if (access_request_too_many_attempts == NO) {
 			retrieve_ble_command();
 			retrieve_current_pin();
+
 			// set new pin
 			if ((new_pin_signal == 1) && (set_pin_mode == ACTIVE)) {
 				update_pin();
 			} else if (set_pin_mode == ACTIVE) {
 				process_pin_change();
+			} else if ((ble_command == current_pin)
+					&& (save_new_card1_mode == REQUESTED1)) {
+				pinResetFeedbacks(2, "Save New Card", "Scan", "New Card");
+				display_temp = DO_NOT_DISPLAY_TEMP;
+				save_new_card1_mode = PROCESSING1;
+				save_new_card_time_flag = time_now();
+			} else if ((ble_command == current_pin)
+					&& (save_new_card2_mode == REQUESTED2)) {
+				pinResetFeedbacks(2, "Save New Card", "Scan", "New Card");
+				display_temp = DO_NOT_DISPLAY_TEMP;
+				save_new_card2_mode = PROCESSING2;
+				save_new_card_time_flag = time_now();
 			}
 			//confirm if entered PIN is correct, grant access
 			else if (ble_command == current_pin) {
 				unlock_door();
 			}
 			//enter pin change mode
-			else if ((ble_command == PIN_CHANGE_COMMAND) && (door_status == LOCKED)) {
+			else if ((ble_command == PIN_CHANGE_COMMAND)
+					&& (door_status == LOCKED)) {
 				enter_pin_change_mode();
+			} else if ((ble_command == REGISTER_CARD1)
+					&& (door_status == LOCKED)) {
+				pinResetFeedbacks(2, "Save New Card1", "Enter", "Current PIN");
+				save_new_card1_mode = REQUESTED1;
+			} else if ((ble_command == REGISTER_CARD2)
+					&& (door_status == LOCKED)) {
+				pinResetFeedbacks(2, "Save New Card2", "Enter", "Current PIN");
+				save_new_card2_mode = REQUESTED2;
 			}
 			//confirm if entered PIN is correct, deny access
 			else if ((ble_command != current_pin) && (door_status == LOCKED)) {
@@ -118,7 +143,7 @@ void retrieve_ble_command(void) {
 
 void retrieve_current_pin(void) {
 	//retrieve current PIN
-	if (Read_Current_PIN(eeprom_data) == HAL_OK) {
+	if (read_current_PIN_from_eeporm(eeprom_data) == HAL_OK) {
 		current_pin = (eeprom_data[0] << 8) | eeprom_data[1];
 	}
 	//print current PIN
@@ -187,7 +212,7 @@ void update_pin(void) {
 		serial_print("Try a different PIN");
 		pinResetFeedbacks(1, "Pin Change Menu", "Try Again", "");
 	} else {
-		write_PIN_to_eeprom(new_pin_buf);
+		write_new_PIN_to_eeprom(new_pin_buf);
 		pinResetFeedbacks(2, "Pin Change Menu", "Pin Change", "Successful");
 		sprintf(print_buffer, "New pin is %d\r\n", ble_command);
 		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,

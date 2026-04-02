@@ -8,7 +8,17 @@
 #ifndef INC_BLE_H_
 #define INC_BLE_H_
 
-#include <main.h>
+//#include <main.h>
+#define STM32F0
+//#define STM32F4
+
+#if defined(STM32F0)
+#include "stm32f0xx_hal.h"
+#elif defined(STM32F4)
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
+#endif
+
 #include <stdbool.h>
 #include "temp_sensor.h"
 #include "eeprom.h"
@@ -18,6 +28,8 @@
 #define PIN_ATTEMPT_RETRY_WAIT_TIME 10000
 #define PIN_CHANGE_RETRY_WAIT_TIME 30000
 #define PIN_CHANGE_COMMAND 10794	//0x2A2A
+#define REGISTER_CARD1 65521	//0xFFF1
+#define REGISTER_CARD2 65522	//0xFFF2
 #define SIZE_IN_BYTES 4
 #define LOCK_DOOR_TIMEOUT 5000
 
@@ -36,6 +48,7 @@ extern TimeStamp set_pin_timeflag;
 extern TimeStamp set_pin_timeout;
 extern TimeStamp attempt_again_timer;
 extern TimeStamp timeOpen;
+extern TimeStamp save_new_card_time_flag;
 
 extern char print_buffer[50];
 extern uint8_t rx_buf[RX_SIZE];	//holds 1 byte of data
@@ -55,6 +68,18 @@ typedef enum {
 	LOCKED, OPEN
 } DOOR_STATUS_t;
 extern DOOR_STATUS_t door_status;
+
+typedef enum {
+	IDLE1, PROCESSING1,
+	REQUESTED1
+} SAVE_NEW_CARD1_MODE_t;
+extern SAVE_NEW_CARD1_MODE_t save_new_card1_mode;
+
+typedef enum {
+	IDLE2, PROCESSING2,
+	REQUESTED2
+} SAVE_NEW_CARD2_MODE_t;
+extern SAVE_NEW_CARD2_MODE_t save_new_card2_mode;
 
 void process_BLE_command(void);
 void receive_BLE_command(void);

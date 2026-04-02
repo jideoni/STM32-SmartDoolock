@@ -94,7 +94,12 @@ uint16_t passcode = 1010;	//0x03F2
 float temp_func;
 typedef uint32_t TimeStamp;
 
-extern uint8_t eeprom_data[EEPROM_RW_DATA_SIZE];
+extern uint8_t eeprom_data[EEPROM_PIN_DATA_SIZE];
+
+//uint8_t card_ID[] = { 1, 2, 3, 4, 5 };
+uint8_t card_ID[] = "1234";
+uint8_t card1_ID[5];
+uint8_t card[4];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,6 +119,7 @@ void StartRFID_Task(void *argument);
 
 /* USER CODE BEGIN PFP */
 void pin_reset_timeout(void);
+void new_card_timeout(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -167,12 +173,39 @@ int main(void) {
 	//Start Timer 16
 	HAL_TIM_Base_Start(&htim16);
 
-	if (Read_Current_PIN(eeprom_data) == HAL_OK) {
+	if (read_current_PIN_from_eeporm(eeprom_data) == HAL_OK) {
 		current_pin = (eeprom_data[0] << 8) | eeprom_data[1];
 		sprintf(print_buffer, "Current Pin EEPROM: %d\r\n", current_pin);
 		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
 				strlen(print_buffer), 20);
 	}
+
+//	//write_card_ID_to_eeprom(card_ID);
+//	HAL_I2C_Mem_Write(SHARED_I2C, EEPROM_ADDR, (1 << 7), 4, card_ID, 8, 50);
+//	HAL_Delay(5);
+//
+////	if (read_card_ID_from_eeprom(card) == HAL_OK) {
+////		card1_ID = (card[0] << 20) | (card[1] << 16) | (card[2] << 12)
+////				| (card[3] << 8) | card[4];
+////		sprintf(print_buffer, "Current card ID: %lu\r\n", card1_ID);
+////		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
+////				strlen(print_buffer), 20);
+////	}
+//
+//	HAL_I2C_Mem_Read(SHARED_I2C, EEPROM_ADDR, (1 << 7), 4, card, 8, 50);
+//	//card1_ID = (card[0] << 20) | (card[1] << 16) | (card[2] << 12)
+//	//| (card[3] << 8) | card[4];
+////	sprintf(print_buffer, "Current card ID: %d\r\n", card[1]);
+////	HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer, strlen(print_buffer),
+////			20);
+//
+//	for (int i = 0; i < sizeof(card); i++) {
+//		//card1_ID[i] = card[i];
+//
+//		sprintf(print_buffer, "Current card ID: %d\r\n", card[i]);
+//		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
+//				strlen(print_buffer), 20);
+//	}
 
 	/* USER CODE END 2 */
 
@@ -546,6 +579,20 @@ void pin_reset_timeout() {
 	}
 }
 
+void new_card_timeout() {
+	set_pin_timeout = time_now();
+	if ((set_pin_timeout - save_new_card_time_flag >= SET_PIN_TIMEOUT)
+			&& ((save_new_card1_mode == PROCESSING1) || (save_new_card2_mode == PROCESSING2))) {
+		serial_print("Save New Card Timeout");
+		pinResetFeedbacks(1, "Save New Card", "Timeout", "");
+		save_new_card1_mode = IDLE1;
+		save_new_card2_mode = IDLE2;
+		//new_pin_signal = 0;
+		display_temp = DISPLAY_TEMP;
+		currentMillis = time_now();
+	}
+}
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART1) {
 		if (BLE_TaskHandle != NULL) {
@@ -649,6 +696,7 @@ void StartMain_Task(void *argument) {
 		}
 		//lock_door();
 		pin_reset_timeout();
+		new_card_timeout();
 		osDelay(1);
 	}
 	/* USER CODE END StartMain_Task */
@@ -665,7 +713,9 @@ void StartRFID_Task(void *argument) {
 	/* USER CODE BEGIN StartRFID_Task */
 	/* Infinite loop */
 	for (;;) {
+		osMutexAcquire(I2C1_MutexHandle, osWaitForever);
 		process_RFID_command();
+		osMutexRelease(I2C1_MutexHandle);
 		if (Display_TaskHandle != NULL) {
 			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
 		}
