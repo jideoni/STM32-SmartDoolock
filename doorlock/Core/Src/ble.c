@@ -46,8 +46,12 @@ void process_BLE_command(void) {
 			retrieve_ble_command();
 			retrieve_current_pin();
 
+			//lock door
+			if (ble_command == LOCK_DOOR_COMMAND){
+				lock_door();
+			}
 			// set new pin
-			if ((new_pin_signal == 1) && (set_pin_mode == ACTIVE)) {
+			else if ((new_pin_signal == 1) && (set_pin_mode == ACTIVE)) {
 				update_pin();
 			} else if (set_pin_mode == ACTIVE) {
 				process_pin_change();
@@ -65,7 +69,7 @@ void process_BLE_command(void) {
 				save_new_card_time_flag = time_now();
 			}
 			//confirm if entered PIN is correct, grant access
-			else if (ble_command == current_pin) {
+			else if (ble_command == current_pin){
 				unlock_door();
 			}
 			//enter pin change mode

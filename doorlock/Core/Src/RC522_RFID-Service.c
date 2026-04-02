@@ -41,7 +41,7 @@ void process_RFID_command(void) {
 				save_new_card1_mode = IDLE1;
 				display_temp = DISPLAY_TEMP;
 				pinResetFeedbacks(2, "Save New Card", "Card 1", "Saved");
-				currentMillis = time_now();
+				//currentMillis = time_now();
 			}
 		} else if (save_new_card2_mode == PROCESSING2) {
 			//read card1 page
@@ -59,7 +59,7 @@ void process_RFID_command(void) {
 				save_new_card2_mode = IDLE2;
 				display_temp = DISPLAY_TEMP;
 				pinResetFeedbacks(2, "Save New Card", "Card 2", "Saved");
-				currentMillis = time_now();
+				//currentMillis = time_now();
 			}
 		} else {
 			//read card1 page
@@ -84,9 +84,10 @@ void process_RFID_command(void) {
 				access_denied();
 				clear_read_card_buf();
 			}
-			currentMillis = time_now();
+			//currentMillis = time_now();
 		}
 		clear_read_card_buf();
+		currentMillis = time_now();
 	}
 }
 

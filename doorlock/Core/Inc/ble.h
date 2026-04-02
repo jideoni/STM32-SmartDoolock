@@ -31,6 +31,7 @@
 #define REGISTER_CARD1 65521	//0xFFF1
 #define REGISTER_CARD2 65522	//0xFFF2
 #define SIZE_IN_BYTES 4
+#define LOCK_DOOR_COMMAND 61166		//0xEEEE
 #define LOCK_DOOR_TIMEOUT 5000
 
 extern bool new_pin_signal;
