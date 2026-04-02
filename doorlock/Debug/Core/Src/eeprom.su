@@ -1,2 +1,4 @@
-../Core/Src/eeprom.c:12:19:Read_Current_PIN	32	static
-../Core/Src/eeprom.c:21:6:write_PIN_to_eeprom	32	static
+../Core/Src/eeprom.c:12:19:read_current_PIN_from_eeporm	32	static
+../Core/Src/eeprom.c:20:6:write_new_PIN_to_eeprom	32	static
+../Core/Src/eeprom.c:30:19:read_card_ID_from_eeprom	32	static
+../Core/Src/eeprom.c:37:6:write_card_ID_to_eeprom	32	static

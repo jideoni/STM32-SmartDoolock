@@ -15,7 +15,7 @@
 extern SPI_HandleTypeDef hspi1;
 
 //Maximum length of the array
-#define MAX_LEN 16
+#define MAX_LEN 5
 
 #define HSPI_INSTANCE				&hspi1
 #define MFRC522_CS_PORT				GPIOB		//SDA

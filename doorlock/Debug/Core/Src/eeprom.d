@@ -1,6 +1,5 @@
 Core/Src/eeprom.o: ../Core/Src/eeprom.c ../Core/Inc/eeprom.h \
- ../Core/Inc/ble.h ../Core/Inc/main.h \
- ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h \
+ ../Core/Inc/ble.h ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h \
  ../Core/Inc/stm32f0xx_hal_conf.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h \
@@ -31,11 +30,10 @@ Core/Src/eeprom.o: ../Core/Src/eeprom.c ../Core/Inc/eeprom.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
- ../Core/Inc/temp_sensor.h ../Core/Inc/ssd1306_service.h \
- ../Core/Inc/eeprom.h
+ ../Core/Inc/temp_sensor.h ../Core/Inc/main.h \
+ ../Core/Inc/ssd1306_service.h ../Core/Inc/eeprom.h
 ../Core/Inc/eeprom.h:
 ../Core/Inc/ble.h:
-../Core/Inc/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/Inc/stm32f0xx_hal_conf.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h:
@@ -68,5 +66,6 @@ Core/Src/eeprom.o: ../Core/Src/eeprom.c ../Core/Inc/eeprom.h \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Core/Inc/temp_sensor.h:
+../Core/Inc/main.h:
 ../Core/Inc/ssd1306_service.h:
 ../Core/Inc/eeprom.h:
