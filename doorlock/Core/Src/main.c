@@ -40,8 +40,9 @@
 #define SET_PIN_TIMEOUT 10000
 
 //thread flags
-#define BLE_TASK_THREAD_FLAG   (1U << 0)	//set bit 0. 1U = 00000001
-#define DISPLAY_TASK_THREAD_FLAG   (1U << 1)	//set bit 1. 1U = 00000010
+#define BLE_TASK_THREAD_FLAG   		(1U << 0)	//set bit 0. 1U = 00000001
+#define DISPLAY_TASK_THREAD_FLAG   	(1U << 1)	//set bit 1. 1U = 00000010
+#define TEMP_TASK_THREAD_FLAG   	(1U << 0)	//set bit 0. 1U = 00000100
 
 /* USER CODE END PD */
 
@@ -52,6 +53,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+DMA_HandleTypeDef hdma_i2c1_rx;
 
 SPI_HandleTypeDef hspi1;
 
@@ -89,7 +91,7 @@ const osThreadAttr_t RFID_TaskHandle_attributes =
 osMutexId_t I2C1_MutexHandle;
 const osMutexAttr_t I2C1_Mutex_attributes = { .name = "I2C1_Mutex" };
 /* USER CODE BEGIN PV */
-uint8_t buf[12];		//12 size buffer of type unsigned 8 bit integer
+//uint8_t temp_buffer[2];		//12 size buffer of type unsigned 8 bit integer
 uint16_t passcode = 1010;	//0x03F2
 float temp_func;
 typedef uint32_t TimeStamp;
@@ -120,6 +122,8 @@ void StartRFID_Task(void *argument);
 /* USER CODE BEGIN PFP */
 void pin_reset_timeout(void);
 void new_card_timeout(void);
+void check_access_request_attempts(void);
+void pin_access_request_attempts(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -163,6 +167,7 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 	RFID_Init();
 	ssd1306_Init();
+	temp_sensor_Init();
 	receive_BLE_command();
 	displayTemperatureAtInit("Temperature");
 
@@ -506,6 +511,9 @@ static void MX_DMA_Init(void) {
 	/* DMA1_Channel2_3_IRQn interrupt configuration */
 	HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 3, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+	/* DMA1_Channel4_5_IRQn interrupt configuration */
+	HAL_NVIC_SetPriority(DMA1_Channel4_5_IRQn, 3, 0);
+	HAL_NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
 
 }
 
@@ -566,6 +574,24 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+void check_access_request_attempts(void) {
+	if (access_request_too_many_attempts
+			== YES&& (time_now() - attempt_again_timer) >= PIN_ATTEMPT_RETRY_WAIT_TIME) {
+		access_request_counter = 0;
+		access_request_too_many_attempts = NO;
+		attempt_again_timer = 0;
+	}
+}
+void pin_access_request_attempts(void) {
+
+	if (pin_reset_too_many_attempts == 1
+			&& (time_now() - pin_reset_attempt_again_timer
+					>= PIN_CHANGE_RETRY_WAIT_TIME)) {
+		pin_change_counter = 0;
+		pin_reset_too_many_attempts = 0;
+		pin_reset_attempt_again_timer = 0;
+	}
+}
 void pin_reset_timeout() {
 	set_pin_timeout = time_now();
 	if ((set_pin_timeout - set_pin_timeflag >= SET_PIN_TIMEOUT)
@@ -582,12 +608,12 @@ void pin_reset_timeout() {
 void new_card_timeout() {
 	set_pin_timeout = time_now();
 	if ((set_pin_timeout - save_new_card_time_flag >= SET_PIN_TIMEOUT)
-			&& ((save_new_card1_mode == PROCESSING1) || (save_new_card2_mode == PROCESSING2))) {
+			&& ((save_new_card1_mode == PROCESSING1)
+					|| (save_new_card2_mode == PROCESSING2))) {
 		serial_print("Save New Card Timeout");
 		pinResetFeedbacks(1, "Save New Card", "Timeout", "");
 		save_new_card1_mode = IDLE1;
 		save_new_card2_mode = IDLE2;
-		//new_pin_signal = 0;
 		display_temp = DISPLAY_TEMP;
 		currentMillis = time_now();
 	}
@@ -659,8 +685,9 @@ void StartTempSensor_Task(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osMutexAcquire(I2C1_MutexHandle, osWaitForever);
-		temp_Sensor_service();
+		temp_sensor_Init();
 		osMutexRelease(I2C1_MutexHandle);
+		temp_Sensor_service();
 		if (Display_TaskHandle != NULL) {
 			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
 		}
@@ -680,23 +707,11 @@ void StartMain_Task(void *argument) {
 	/* USER CODE BEGIN StartMain_Task */
 	/* Infinite loop */
 	for (;;) {
-		if (access_request_too_many_attempts
-				== YES&& (time_now() - attempt_again_timer) >= PIN_ATTEMPT_RETRY_WAIT_TIME) {
-			access_request_counter = 0;
-			access_request_too_many_attempts = NO;
-			attempt_again_timer = 0;
-		}
-
-		if (pin_reset_too_many_attempts == 1
-				&& (time_now() - pin_reset_attempt_again_timer
-						>= PIN_CHANGE_RETRY_WAIT_TIME)) {
-			pin_change_counter = 0;
-			pin_reset_too_many_attempts = 0;
-			pin_reset_attempt_again_timer = 0;
-		}
-		//lock_door();
+		check_access_request_attempts();
+		pin_access_request_attempts();
 		pin_reset_timeout();
 		new_card_timeout();
+		//lock_door();
 		osDelay(1);
 	}
 	/* USER CODE END StartMain_Task */
