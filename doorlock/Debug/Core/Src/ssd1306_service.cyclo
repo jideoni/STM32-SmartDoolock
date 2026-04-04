@@ -1,6 +1,6 @@
 ssd1306_service.c:15:6:ssd1306_RectangleFill	1
 ssd1306_service.c:20:6:ssd1306_Circle	2
 ssd1306_service.c:29:6:displayTemperatureAtInit	1
-ssd1306_service.c:45:6:displayTemperature	2
+ssd1306_service.c:45:6:displayTemperature	1
 ssd1306_service.c:64:6:pinResetFeedbacks	3
 ssd1306_service.c:104:6:pinResetFeedbacksNoHeading	1

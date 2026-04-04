@@ -43,7 +43,7 @@ void displayTemperatureAtInit(char *heading) {
 }
 
 void displayTemperature(char *heading) {
-	if (__HAL_TIM_GET_COUNTER(&htim16) - timer_val >= 3000) {
+	//if (__HAL_TIM_GET_COUNTER(&htim16) - timer_val >= 3000) {
 		t = TMP102_Read_Temp();
 		snprintf((char*) b, sizeof(b), "%2d C", ((unsigned int) t / 100));
 
@@ -57,8 +57,8 @@ void displayTemperature(char *heading) {
 		ssd1306_WriteString(b, Font_16x26, White);
 		ssd1306_DrawCircle(71, 27, 2, White);
 
-		timer_val = __HAL_TIM_GET_COUNTER(&htim16);
-	}
+		//timer_val = __HAL_TIM_GET_COUNTER(&htim16);
+	//}
 }
 
 void pinResetFeedbacks(int line_count, char *heading, char *line1, char *line2) {

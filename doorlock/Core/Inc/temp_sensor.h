@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include "ssd1306_service.h"
 
+
 #define TEMPERATURE_DISPLAY_TIME 3000
 #define AMT_OF_DATA_TO_READ 2
 

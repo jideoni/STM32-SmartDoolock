@@ -685,9 +685,8 @@ void StartTempSensor_Task(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 		osMutexAcquire(I2C1_MutexHandle, osWaitForever);
-		temp_sensor_Init();
-		osMutexRelease(I2C1_MutexHandle);
 		temp_Sensor_service();
+		osMutexRelease(I2C1_MutexHandle);
 		if (Display_TaskHandle != NULL) {
 			osThreadFlagsSet(Display_TaskHandle, DISPLAY_TASK_THREAD_FLAG);
 		}

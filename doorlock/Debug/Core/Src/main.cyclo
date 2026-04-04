@@ -15,6 +15,6 @@ main.c:622:6:HAL_UART_RxCpltCallback	3
 main.c:638:6:StartBLE_Task	2
 main.c:662:6:StartDisplay_Task	1
 main.c:683:6:StartTempSensor_Task	2
-main.c:706:6:StartMain_Task	1
-main.c:727:6:StartRFID_Task	2
-main.c:746:6:Error_Handler	1
+main.c:707:6:StartMain_Task	1
+main.c:728:6:StartRFID_Task	2
+main.c:747:6:Error_Handler	1
