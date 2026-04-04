@@ -178,12 +178,12 @@ int main(void) {
 	//Start Timer 16
 	HAL_TIM_Base_Start(&htim16);
 
-	if (read_current_PIN_from_eeporm(eeprom_data) == HAL_OK) {
-		current_pin = (eeprom_data[0] << 8) | eeprom_data[1];
-		sprintf(print_buffer, "Current Pin EEPROM: %d\r\n", current_pin);
-		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
-				strlen(print_buffer), 20);
-	}
+//	if (read_current_PIN_from_eeporm(eeprom_data) == HAL_OK) {
+//		current_pin = (eeprom_data[0] << 8) | eeprom_data[1];
+//		sprintf(print_buffer, "Current Pin EEPROM: %d\r\n", current_pin);
+//		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
+//				strlen(print_buffer), 20);
+//	}
 
 //	//write_card_ID_to_eeprom(card_ID);
 //	HAL_I2C_Mem_Write(SHARED_I2C, EEPROM_ADDR, (1 << 7), 4, card_ID, 8, 50);

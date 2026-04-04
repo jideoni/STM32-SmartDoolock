@@ -8,10 +8,8 @@
 #include "RC522_RFID_Service.h"
 
 static uint8_t status = 0;
-static uint8_t read_card_buf[MAX_LEN]; // Max_LEN = 5
 static uint8_t sNum[ID_SIZE];
-uint8_t card1ID[5];
-uint8_t card2ID[5];
+extern uint8_t read_card_buf[MAX_LEN];
 
 extern I2C_HandleTypeDef hi2c1;
 
@@ -26,51 +24,31 @@ void process_RFID_command(void) {
 
 	if (confirm_read_card_buf_is_full(read_card_buf)) {
 		if (save_new_card1_mode == PROCESSING1) {
-			//read card2 page
-			HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, (CARD2_PAGE << 6),
-			EEPROM_CARD_ID_MEM_ADDR_SIZE, card2ID,
-			AMT_OF_DATA_TO_SEND, 1000);
+			//read card2ID from eeprom
+			read_card2ID_from_eeprom();
 			if (memcmp(read_card_buf, card2ID, 5) == 0) {
 				pinResetFeedbacks(2, "Save New Card", "Try Another", "Card");
 				save_new_card_time_flag = time_now();
 			} else {
-				HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDR, EEPROM_CARD1_ID_PAGE,
-				EEPROM_CARD_ID_MEM_ADDR_SIZE, read_card_buf,
-				AMT_OF_DATA_TO_SEND, 1000);
-				HAL_Delay(5);
-				save_new_card1_mode = IDLE1;
-				display_temp = DISPLAY_TEMP;
-				pinResetFeedbacks(2, "Save New Card", "Card 1", "Saved");
-				//currentMillis = time_now();
+				//Save new card1 to eeprom
+				save_card1ID_to_eeprom();
 			}
 		} else if (save_new_card2_mode == PROCESSING2) {
-			//read card1 page
-			HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, (CARD1_PAGE << 6),
-			EEPROM_CARD_ID_MEM_ADDR_SIZE, card1ID,
-			AMT_OF_DATA_TO_SEND, 1000);
+			//read card1ID from eeprom
+			read_card1ID_from_eeprom();
 			if (memcmp(read_card_buf, card1ID, 5) == 0) {
 				pinResetFeedbacks(2, "Save New Card", "Try Another", "Card");
 				save_new_card_time_flag = time_now();
 			} else {
-				HAL_I2C_Mem_Write(&hi2c1, EEPROM_ADDR, EEPROM_CARD2_ID_PAGE,
-				EEPROM_CARD_ID_MEM_ADDR_SIZE, read_card_buf,
-				AMT_OF_DATA_TO_SEND, 1000);
-				HAL_Delay(5);
-				save_new_card2_mode = IDLE2;
-				display_temp = DISPLAY_TEMP;
-				pinResetFeedbacks(2, "Save New Card", "Card 2", "Saved");
+				//Save new card2 to eeprom
+				save_card2ID_to_eeprom();
 				//currentMillis = time_now();
 			}
 		} else {
-			//read card1 page
-			HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, (CARD1_PAGE << 6),
-			EEPROM_CARD_ID_MEM_ADDR_SIZE, card1ID,
-			AMT_OF_DATA_TO_SEND, 1000);
-
-			//read card2 page
-			HAL_I2C_Mem_Read(&hi2c1, EEPROM_ADDR, (CARD2_PAGE << 6),
-			EEPROM_CARD_ID_MEM_ADDR_SIZE, card2ID,
-			AMT_OF_DATA_TO_SEND, 1000);
+			//read card1ID from eeprom
+			read_card1ID_from_eeprom();
+			//read card2ID from eeprom
+			read_card2ID_from_eeprom();
 
 			if ((memcmp(read_card_buf, card1ID, 5) == 0)
 					|| (memcmp(read_card_buf, card2ID, 5) == 0)) {
@@ -79,12 +57,10 @@ void process_RFID_command(void) {
 				} else {
 					lock_door();
 				}
-				//currentMillis = time_now();
 			} else {
 				access_denied();
 				clear_read_card_buf();
 			}
-			//currentMillis = time_now();
 		}
 		clear_read_card_buf();
 		currentMillis = time_now();

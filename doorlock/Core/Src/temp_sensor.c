@@ -49,7 +49,6 @@ float temp_c;
 float TMP102_Read_Temp(void) {
 	//Initialize for next read
 	temp_sensor_Init();
-
 	// Combine the bytes
 	val = ((int16_t) temp_buffer[0] << 4) | (temp_buffer[1] >> 4);
 	//Convert to 2's complement, since temperature can be negative

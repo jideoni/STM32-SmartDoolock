@@ -15,6 +15,6 @@
 ../Core/Src/main.c:638:6:StartBLE_Task	16	static
 ../Core/Src/main.c:662:6:StartDisplay_Task	16	static
 ../Core/Src/main.c:683:6:StartTempSensor_Task	16	static
-../Core/Src/main.c:707:6:StartMain_Task	16	static
-../Core/Src/main.c:728:6:StartRFID_Task	16	static
-../Core/Src/main.c:747:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:705:6:StartMain_Task	16	static
+../Core/Src/main.c:726:6:StartRFID_Task	16	static
+../Core/Src/main.c:745:6:Error_Handler	8	static,ignoring_inline_asm
