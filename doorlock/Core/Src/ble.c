@@ -80,10 +80,12 @@ void process_BLE_command(void) {
 					&& (door_status == LOCKED)) {
 				pinResetFeedbacks(2, "Save New Card1", "Enter", "Current PIN");
 				save_new_card1_mode = REQUESTED1;
+				save_new_card_time_flag = time_now();
 			} else if ((ble_command == REGISTER_CARD2)
 					&& (door_status == LOCKED)) {
 				pinResetFeedbacks(2, "Save New Card2", "Enter", "Current PIN");
 				save_new_card2_mode = REQUESTED2;
+				save_new_card_time_flag = time_now();
 			}
 			//confirm if entered PIN is correct, deny access
 			else if ((ble_command != current_pin) && (door_status == LOCKED)) {

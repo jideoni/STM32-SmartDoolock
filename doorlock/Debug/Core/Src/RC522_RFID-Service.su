@@ -1,4 +1,4 @@
-../Core/Src/RC522_RFID-Service.c:19:6:RFID_Init	8	static
-../Core/Src/RC522_RFID-Service.c:23:6:process_RFID_command	8	static
-../Core/Src/RC522_RFID-Service.c:76:9:confirm_read_card_buf_is_full	24	static
-../Core/Src/RC522_RFID-Service.c:85:6:clear_read_card_buf	16	static
+../Core/Src/RC522_RFID-Service.c:16:6:RFID_Init	8	static
+../Core/Src/RC522_RFID-Service.c:20:6:process_RFID_command	8	static
+../Core/Src/RC522_RFID-Service.c:70:9:confirm_read_card_buf_is_full	24	static
+../Core/Src/RC522_RFID-Service.c:79:6:clear_read_card_buf	16	static
