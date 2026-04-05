@@ -1,4 +1,6 @@
-eeprom.c:12:19:read_current_PIN_from_eeporm	1
-eeprom.c:20:6:write_new_PIN_to_eeprom	1
-eeprom.c:30:19:read_card_ID_from_eeprom	1
-eeprom.c:37:6:write_card_ID_to_eeprom	1
+eeprom.c:16:19:read_current_PIN_from_eeporm	1
+eeprom.c:22:6:write_new_PIN_to_eeprom	1
+eeprom.c:29:6:read_card1ID_from_eeprom	1
+eeprom.c:33:6:read_card2ID_from_eeprom	1
+eeprom.c:37:6:save_card1ID_to_eeprom	1
+eeprom.c:46:6:save_card2ID_to_eeprom	1

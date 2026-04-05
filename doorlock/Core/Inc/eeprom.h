@@ -23,10 +23,23 @@
 #define EEPROM_CARD_ID_MEM_ADDR_SIZE 	2			//2 bytes
 #define EEPROM_CARD_DATA_SIZE 			5			//5 bytes
 
+#define ID_SIZE 5
+#define CARD1_PAGE 10
+#define CARD2_PAGE 11
+#define AMT_OF_DATA_TO_SEND 5	//5 bytes
+#define MAX_LEN 5	//Maximum length of the array
+
+extern uint8_t card1ID[5];
+extern uint8_t card2ID[5];
+
+//BLE EEPROM Functions
 void write_new_PIN_to_eeprom(uint8_t ble_rx[]);
 HAL_StatusTypeDef read_current_PIN_from_eeporm(uint8_t *pin);
 
-void write_card_ID_to_eeprom(uint8_t card_ID[]);
-HAL_StatusTypeDef read_card_ID_from_eeprom(uint8_t *card);
+//RFID EEPROM Functions
+void read_card1ID_from_eeprom(void);
+void read_card2ID_from_eeprom(void);
+void save_card1ID_to_eeprom(void);
+void save_card2ID_to_eeprom(void);
 
 #endif /* INC_EEPROM_H_ */

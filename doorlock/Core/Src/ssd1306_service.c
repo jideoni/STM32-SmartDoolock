@@ -56,7 +56,6 @@ void displayTemperature(char *heading) {
 
 		ssd1306_WriteString(b, Font_16x26, White);
 		ssd1306_DrawCircle(71, 27, 2, White);
-		//ssd1306_UpdateScreen();
 
 		timer_val = __HAL_TIM_GET_COUNTER(&htim16);
 	}

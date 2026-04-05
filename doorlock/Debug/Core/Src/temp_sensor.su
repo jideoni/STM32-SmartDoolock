@@ -1,3 +1,4 @@
-../Core/Src/temp_sensor.c:23:7:TMP102_Read_Temp	16	static
-../Core/Src/temp_sensor.c:49:10:time_now	8	static
-../Core/Src/temp_sensor.c:53:6:temp_Sensor_service	8	static
+../Core/Src/temp_sensor.c:49:7:TMP102_Read_Temp	8	static
+../Core/Src/temp_sensor.c:65:6:temp_sensor_Init	16	static
+../Core/Src/temp_sensor.c:70:10:time_now	8	static
+../Core/Src/temp_sensor.c:74:6:temp_Sensor_service	8	static
