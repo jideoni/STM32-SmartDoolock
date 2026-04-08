@@ -38,12 +38,10 @@
 /* USER CODE BEGIN PD */
 #define SHARED_I2C &hi2c1
 #define SET_PIN_TIMEOUT 10000
-
 //thread flags
 #define BLE_TASK_THREAD_FLAG   		(1U << 0)	//set bit 0. 1U = 00000001
 #define DISPLAY_TASK_THREAD_FLAG   	(1U << 1)	//set bit 1. 1U = 00000010
-#define TEMP_TASK_THREAD_FLAG   	(1U << 0)	//set bit 0. 1U = 00000100
-
+#define TEMP_TASK_THREAD_FLAG   	(1U << 2)	//set bit 0. 1U = 00000100
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,11 +52,8 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 DMA_HandleTypeDef hdma_i2c1_rx;
-
 SPI_HandleTypeDef hspi1;
-
 TIM_HandleTypeDef htim16;
-
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
@@ -171,46 +166,8 @@ int main(void) {
 	receive_BLE_command();
 	displayTemperatureAtInit("Temperature");
 
-	//Update_PIN(dataw1);
-	//HAL_I2C_Mem_Write(SHARED_I2C, EEPROM_ADDR, (1 << 6), 2, dataw1, 4, 50);
-	//HAL_Delay(5);
-
 	//Start Timer 16
 	HAL_TIM_Base_Start(&htim16);
-
-//	if (read_current_PIN_from_eeporm(eeprom_data) == HAL_OK) {
-//		current_pin = (eeprom_data[0] << 8) | eeprom_data[1];
-//		sprintf(print_buffer, "Current Pin EEPROM: %d\r\n", current_pin);
-//		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
-//				strlen(print_buffer), 20);
-//	}
-
-//	//write_card_ID_to_eeprom(card_ID);
-//	HAL_I2C_Mem_Write(SHARED_I2C, EEPROM_ADDR, (1 << 7), 4, card_ID, 8, 50);
-//	HAL_Delay(5);
-//
-////	if (read_card_ID_from_eeprom(card) == HAL_OK) {
-////		card1_ID = (card[0] << 20) | (card[1] << 16) | (card[2] << 12)
-////				| (card[3] << 8) | card[4];
-////		sprintf(print_buffer, "Current card ID: %lu\r\n", card1_ID);
-////		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
-////				strlen(print_buffer), 20);
-////	}
-//
-//	HAL_I2C_Mem_Read(SHARED_I2C, EEPROM_ADDR, (1 << 7), 4, card, 8, 50);
-//	//card1_ID = (card[0] << 20) | (card[1] << 16) | (card[2] << 12)
-//	//| (card[3] << 8) | card[4];
-////	sprintf(print_buffer, "Current card ID: %d\r\n", card[1]);
-////	HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer, strlen(print_buffer),
-////			20);
-//
-//	for (int i = 0; i < sizeof(card); i++) {
-//		//card1_ID[i] = card[i];
-//
-//		sprintf(print_buffer, "Current card ID: %d\r\n", card[i]);
-//		HAL_UART_Transmit(&huart2, (uint8_t*) print_buffer,
-//				strlen(print_buffer), 20);
-//	}
 
 	/* USER CODE END 2 */
 
